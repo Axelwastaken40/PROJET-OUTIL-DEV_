@@ -21,9 +21,11 @@ window.addEventListener('load', () => {
         p.textContent = msg;
         log.appendChild(p);
         console.log('AUTOTEST:', msg);
+        messages.push(msg);
     }
 
     function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+    const messages = [];
 
     (async () => {
         await wait(300);
@@ -76,5 +78,14 @@ window.addEventListener('load', () => {
         }
 
         append('AUTOTEST COMPLETE');
+        // POST results back to the local server for collection
+        try {
+            const payload = { results: messages };
+            await fetch('/autotest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            append('Posted autotest results to /autotest');
+        } catch (e) {
+            append('Failed to POST results: ' + e.toString());
+            console.error(e);
+        }
     })();
 });
