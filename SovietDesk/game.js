@@ -18,40 +18,94 @@ class GameState {
             "Scientists": { influence: 40, loyalty: 50, satisfaction: 50 }
         };
         
-        this.gauges = {
-            paranoia: 20,
-            stability: 60,
-            resources: 100
-        };
-    }
-    
-    loadData(dossiersData, eventsData) {
-        this.dossiers = dossiersData;
-        this.events = eventsData;
-        this.refreshDossierQueue();
-    }
-    
-    refreshDossierQueue() {
-        this.currentDossierQueue = [];
-        const available = this.dossiers.filter(d => !this.processedDossiers.includes(d.id));
-        
-        for (let i = 0; i < Math.min(3, available.length); i++) {
-            const randomIdx = Math.floor(Math.random() * available.length);
-            const chosen = available[randomIdx];
-            this.currentDossierQueue.push(chosen);
-            available.splice(randomIdx, 1);
-        }
-    }
-    
-    applyDossierConsequence(dossier, action) {
-        const consequences = dossier.consequences[`if_${action}`] || {};
-        
-        for (const key in consequences) {
-            const value = consequences[key];
-            
-            if (key in this.gauges) {
-                this.gauges[key] = Math.max(0, Math.min(100, this.gauges[key] + value));
-            } else if (key.includes("_")) {
+            // Background: wall (soviet office palette)
+            ctx.fillStyle = '#24462f'; // deep green wall
+            ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+            // Large map on the wall (center-left)
+            const mapW = Math.min(520, displayWidth * 0.5);
+            const mapH = Math.min(320, displayHeight * 0.38);
+            const mapX = Math.max(60, displayWidth * 0.08);
+            const mapY = Math.max(40, displayHeight * 0.08);
+            ctx.fillStyle = '#e6d9c7';
+            ctx.fillRect(mapX, mapY, mapW, mapH);
+            ctx.strokeStyle = '#aa7f3c'; ctx.lineWidth = 2;
+            ctx.strokeRect(mapX, mapY, mapW, mapH);
+            ctx.fillStyle = '#9b6a3a'; ctx.font = '20px Courier New';
+            ctx.fillText('UNION OF SOVIET', mapX + 12, mapY + 28);
+            ctx.fillText('SOCIALIST REPUBLICS', mapX + 12, mapY + 52);
+            // Sketchy 'map' marks
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1;
+            for (let i = 0; i < 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(mapX + 20 + Math.random() * (mapW - 40), mapY + 60 + Math.random() * (mapH - 100));
+                ctx.lineTo(mapX + 30 + Math.random() * (mapW - 60), mapY + 60 + Math.random() * (mapH - 100));
+                ctx.stroke();
+            }
+
+            // Portrait frames (Lenin, Stalin) on the wall to the right
+            const frameW = 120, frameH = 160;
+            const f1x = displayWidth - frameW - 60;
+            const f1y = 40;
+            const f2x = f1x - frameW - 20;
+            const f2y = f1y + 10;
+            // Lenin (left)
+            ctx.fillStyle = '#2b2b2b'; ctx.fillRect(f2x, f2y, frameW, frameH);
+            ctx.strokeStyle = '#b88b3a'; ctx.lineWidth = 4; ctx.strokeRect(f2x, f2y, frameW, frameH);
+            // simple silhouette
+            ctx.fillStyle = '#f0e7d6'; ctx.beginPath(); ctx.arc(f2x + frameW/2, f2y + 60, 28, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#222'; ctx.font = 'bold 14px Courier New'; ctx.fillText('LENIN', f2x + 18, f2y + frameH - 10);
+            // Stalin (right)
+            ctx.fillStyle = '#2b2b2b'; ctx.fillRect(f1x, f1y, frameW, frameH);
+            ctx.strokeStyle = '#b88b3a'; ctx.lineWidth = 4; ctx.strokeRect(f1x, f1y, frameW, frameH);
+            ctx.fillStyle = '#f0e7d6'; ctx.beginPath(); ctx.arc(f1x + frameW/2, f1y + 60, 28, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#222'; ctx.font = 'bold 14px Courier New'; ctx.fillText('STALIN', f1x + 18, f1y + frameH - 10);
+
+            // Soviet flags (red banners) flanking the portraits
+            function drawFlag(x, y, h) {
+                ctx.fillStyle = '#b40000'; ctx.fillRect(x, y, h*0.6, h);
+                // hammer & sickle simple: circle and arc
+                ctx.fillStyle = '#ffd93d'; ctx.beginPath(); ctx.arc(x + h*0.24, y + h*0.35, h*0.08, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(x + h*0.28, y + h*0.28); ctx.quadraticCurveTo(x + h*0.4, y + h*0.2, x + h*0.52, y + h*0.44); ctx.strokeStyle = '#ffd93d'; ctx.lineWidth = 3; ctx.stroke();
+            }
+            drawFlag(f2x - 40, f2y + 20, 80);
+            drawFlag(f1x + frameW + 10, f1y + 20, 80);
+
+            // Bookshelf at left
+            const shelfX = mapX + mapW + 20;
+            const shelfY = mapY;
+            ctx.fillStyle = '#4a3629'; ctx.fillRect(shelfX, shelfY, 140, mapH + 20);
+            for (let s = 0; s < 6; s++) {
+                ctx.fillStyle = `rgba(200,180,140,${0.6 - s*0.06})`;
+                ctx.fillRect(shelfX + 8, shelfY + 12 + s*38, 124, 22);
+            }
+
+            // Desk foreground: leather inset with perspective trapezoid
+            const deskTopY = displayHeight * 0.55;
+            ctx.beginPath();
+            ctx.moveTo(40, deskTopY);
+            ctx.lineTo(displayWidth - 40, deskTopY);
+            ctx.lineTo(displayWidth - 10, displayHeight - 20);
+            ctx.lineTo(10, displayHeight - 20);
+            ctx.closePath();
+            const leatherGrad = ctx.createLinearGradient(0, deskTopY, 0, displayHeight);
+            leatherGrad.addColorStop(0, '#7a3e2f'); leatherGrad.addColorStop(1, '#4b220f');
+            ctx.fillStyle = leatherGrad; ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 2; ctx.stroke();
+
+            // Desk items shadow and vignette
+            ctx.fillStyle = 'rgba(0,0,0,0.12)';
+            ctx.fillRect(0, displayHeight - 18, displayWidth, 18);
+
+            // Gentle wood grain on leather (subtle)
+            for (let i = 0; i < 18; i++) {
+                ctx.strokeStyle = `rgba(0,0,0,${0.02 + Math.random()*0.04})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(20, deskTopY + Math.random() * (displayHeight - deskTopY - 20)); ctx.quadraticCurveTo(displayWidth * 0.5, deskTopY + Math.random() * 10 + 10, displayWidth - 20, deskTopY + Math.random() * (displayHeight - deskTopY - 20)); ctx.stroke();
+            }
+
+            // Debug hint
+            if (window.__SOVIET_DESK_DEBUG) console.log('drawDesk', {displayWidth, displayHeight, dpr});
                 const parts = key.split("_");
                 const factionName = parts[0];
                 const stat = parts[1];

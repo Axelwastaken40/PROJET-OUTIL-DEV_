@@ -82,28 +82,28 @@ body {
 
 /* Specific Object Positions */
 .telephone {
-    left: 8%;
-    top: 38%;
+    left: 18%;
+    top: 66%;
 }
 
 .dossiers-stack {
     left: 42%;
-    top: 32%;
+    top: 62%;
 }
 
 .radio {
-    right: 12%;
-    top: 28%;
+    right: 18%;
+    top: 60%;
 }
 
 .typewriter {
-    left: 22%;
-    bottom: 12%;
+    left: 54%;
+    top: 64%;
 }
 
 .safe {
-    right: 8%;
-    bottom: 15%;
+    right: 12%;
+    top: 68%;
 }
 
 /* Top Status Bar */
