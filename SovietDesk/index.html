@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soviet Desk - Political Regime Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Top Bar -->
+        <div id="top-bar">
+            <div class="gauge-display">
+                <div class="gauge">
+                    <label>DAY</label>
+                    <span id="day-counter">1</span>
+                </div>
+                <div class="gauge paranoia">
+                    <label>PARANOIA</label>
+                    <div class="gauge-bar">
+                        <div id="paranoia-bar" class="gauge-fill"></div>
+                    </div>
+                    <span id="paranoia-value">20</span>/100
+                </div>
+                <div class="gauge stability">
+                    <label>STABILITY</label>
+                    <div class="gauge-bar">
+                        <div id="stability-bar" class="gauge-fill"></div>
+                    </div>
+                    <span id="stability-value">60</span>/100
+                </div>
+                <div class="gauge resources">
+                    <label>RESOURCES</label>
+                    <div class="gauge-bar">
+                        <div id="resources-bar" class="gauge-fill"></div>
+                    </div>
+                    <span id="resources-value">100</span>/100
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content">
+            <!-- Left Panel: Dossiers -->
+            <div id="left-panel" class="panel">
+                <h2>INCOMING DOSSIERS</h2>
+                <div id="dossier-queue"></div>
+                <button id="next-day-btn" class="btn-large" style="display:none;">NEXT DAY</button>
+            </div>
+
+            <!-- Right Panel: Factions -->
+            <div id="right-panel" class="panel">
+                <h2>FACTION STATUS</h2>
+                <div id="faction-list"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel: Log -->
+        <div id="bottom-panel" class="panel">
+            <h2>JOURNAL & EVENTS</h2>
+            <div id="log-container"></div>
+        </div>
+
+        <!-- Dossier Detail Modal -->
+        <div id="dossier-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modal-title"></h2>
+                <p id="modal-description"></p>
+                <div id="modal-info"></div>
+                <div id="modal-buttons" class="button-group">
+                    <button id="sign-btn" class="btn sign">SIGN</button>
+                    <button id="refuse-btn" class="btn refuse">REFUSE</button>
+                    <button id="delay-btn" class="btn delay">DELAY</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="game-over-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>GAME OVER</h2>
+                <p id="game-over-reason"></p>
+                <button id="restart-btn" class="btn-large">RESTART</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

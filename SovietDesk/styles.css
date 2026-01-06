@@ -1,0 +1,366 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+#game-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+/* Top Bar */
+#top-bar {
+    background-color: #0a0a0a;
+    border-bottom: 2px solid #cc0000;
+    padding: 10px 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.gauge-display {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    width: 100%;
+}
+
+.gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+}
+
+.gauge label {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #ffff00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.gauge-bar {
+    width: 100px;
+    height: 20px;
+    background-color: #333;
+    border: 1px solid #666;
+    margin: 5px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.gauge-fill {
+    height: 100%;
+    background-color: #00ff00;
+    width: 60%;
+    transition: width 0.3s ease;
+}
+
+.gauge.paranoia .gauge-fill {
+    background-color: #ff6600;
+}
+
+.gauge.stability .gauge-fill {
+    background-color: #00ccff;
+}
+
+.gauge.resources .gauge-fill {
+    background-color: #ffff00;
+}
+
+.gauge span {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+#day-counter {
+    font-size: 2em;
+    color: #ffff00;
+    font-weight: bold;
+}
+
+/* Main Content */
+#main-content {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.panel {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid #cc0000;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+.panel h2 {
+    color: #ffff00;
+    text-transform: uppercase;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #cc0000;
+    padding-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+#left-panel {
+    flex: 1;
+    max-width: 50%;
+}
+
+#right-panel {
+    flex: 0.8;
+}
+
+#bottom-panel {
+    height: 150px;
+    margin-top: 10px;
+}
+
+/* Dossier Items */
+.dossier-item {
+    background-color: rgba(51, 51, 51, 0.8);
+    border-left: 4px solid #ffff00;
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.dossier-item:hover {
+    background-color: rgba(80, 80, 80, 0.9);
+    transform: translateX(5px);
+    border-left-color: #ff6600;
+}
+
+.dossier-title {
+    font-weight: bold;
+    color: #ffff00;
+    margin-bottom: 5px;
+}
+
+.dossier-meta {
+    font-size: 0.85em;
+    color: #aaaaaa;
+    display: flex;
+    gap: 10px;
+}
+
+.urgency-high { color: #ff0000; }
+.urgency-medium { color: #ff6600; }
+.urgency-low { color: #ffff00; }
+
+/* Faction Status */
+.faction-item {
+    background-color: rgba(51, 51, 51, 0.8);
+    border-left: 3px solid #00ff00;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 3px;
+}
+
+.faction-name {
+    font-weight: bold;
+    color: #00ff00;
+    margin-bottom: 5px;
+}
+
+.faction-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    margin: 3px 0;
+}
+
+.faction-bar {
+    flex: 1;
+    height: 8px;
+    background-color: #222;
+    border: 1px solid #444;
+    margin: 0 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.faction-bar-fill {
+    height: 100%;
+    background-color: #00ff00;
+}
+
+/* Log */
+#log-container {
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: #aaaaaa;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.log-entry {
+    margin-bottom: 5px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.log-entry.event {
+    color: #ff6600;
+    font-weight: bold;
+}
+
+.log-entry.success {
+    color: #00ff00;
+}
+
+.log-entry.warning {
+    color: #ff0000;
+}
+
+/* Buttons */
+.btn, .btn-large {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #cc0000;
+    color: #ffff00;
+    border: 2px solid #ffff00;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.btn:hover, .btn-large:hover {
+    background-color: #ff0000;
+    transform: scale(1.05);
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 1.1em;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.btn.sign {
+    background-color: #00aa00;
+    border-color: #00ff00;
+    color: #ffff00;
+}
+
+.btn.refuse {
+    background-color: #aa0000;
+    border-color: #ff0000;
+    color: #ffff00;
+}
+
+.btn.delay {
+    background-color: #666600;
+    border-color: #ffff00;
+    color: #ffff00;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.button-group button {
+    flex: 1;
+    padding: 12px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #1a1a1a;
+    border: 3px solid #cc0000;
+    padding: 30px;
+    border-radius: 5px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(204, 0, 0, 0.5);
+}
+
+.modal h2 {
+    color: #ffff00;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    border-bottom: 2px solid #cc0000;
+    padding-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.modal p {
+    color: #e0e0e0;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+#modal-info {
+    background-color: rgba(51, 51, 51, 0.8);
+    border-left: 3px solid #00ff00;
+    padding: 15px;
+    margin: 15px 0;
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.close {
+    color: #cc0000;
+    float: right;
+    font-size: 2em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #ff0000;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cc0000;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff0000;
+}
