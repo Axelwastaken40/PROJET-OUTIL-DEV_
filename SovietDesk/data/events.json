@@ -1,0 +1,57 @@
+{
+  "events": [
+    {
+      "id": "evt_001",
+      "title": "Attempted Military Coup",
+      "description": "The Army attempts to overthrow your government!",
+      "probability": 0.15,
+      "trigger_condition": "Army_influence > 70 AND Army_loyalty < 30",
+      "consequences": {
+        "if_handled_well": { "Army_influence": -20, "stability": -10 },
+        "if_failed": { "stability": -40, "game_over": true }
+      }
+    },
+    {
+      "id": "evt_002",
+      "title": "Worker Strike in Major City",
+      "description": "Workers strike demanding higher wages and better conditions",
+      "probability": 0.25,
+      "trigger_condition": "People_satisfaction < 30",
+      "consequences": {
+        "if_concede": { "People_satisfaction": 15, "resources": -10 },
+        "if_suppress": { "People_satisfaction": -20, "paranoia": 10, "SecretPolice_influence": 5 }
+      }
+    },
+    {
+      "id": "evt_003",
+      "title": "Scientific Breakthrough",
+      "description": "Scientists announce a major technological advancement!",
+      "probability": 0.2,
+      "trigger_condition": "Scientists_influence > 50",
+      "consequences": {
+        "automatic": { "Scientists_loyalty": 10, "stability": 5, "resources": 25 }
+      }
+    },
+    {
+      "id": "evt_004",
+      "title": "Leak of Classified Documents",
+      "description": "Secret files leaked to foreign press",
+      "probability": 0.1,
+      "trigger_condition": "paranoia > 60",
+      "consequences": {
+        "automatic": { "paranoia": 10, "People_satisfaction": -10, "stability": -5 }
+      }
+    },
+    {
+      "id": "evt_005",
+      "title": "Party Leadership Challenge",
+      "description": "A faction within the Party challenges your authority",
+      "probability": 0.12,
+      "trigger_condition": "Party_loyalty < 40",
+      "consequences": {
+        "if_crush": { "Party_loyalty": -15, "paranoia": 15 },
+        "if_negotiate": { "Party_loyalty": 10, "stability": 5 }
+      }
+    }
+  ]
+}

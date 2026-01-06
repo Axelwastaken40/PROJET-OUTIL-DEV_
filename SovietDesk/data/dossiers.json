@@ -1,0 +1,74 @@
+{
+  "dossiers": [
+    {
+      "id": "dos_001",
+      "title": "Allocate Military Funds",
+      "description": "Request to increase military budget by 15%",
+      "source": "Ministry of Defence",
+      "urgency": 8,
+      "risk": 3,
+      "benefit": 5,
+      "linked_faction": "Army",
+      "consequences": {
+        "if_signed": { "Army_influence": 10, "paranoia": 2 },
+        "if_refused": { "Army_loyalty": -8, "stability": -3 }
+      }
+    },
+    {
+      "id": "dos_002",
+      "title": "Expand Secret Police Authority",
+      "description": "Grant Secret Police expanded surveillance powers",
+      "source": "Secret Police",
+      "urgency": 7,
+      "risk": 8,
+      "benefit": 6,
+      "linked_faction": "SecretPolice",
+      "consequences": {
+        "if_signed": { "SecretPolice_influence": 12, "paranoia": 15, "People_satisfaction": -10 },
+        "if_refused": { "SecretPolice_loyalty": -10 }
+      }
+    },
+    {
+      "id": "dos_003",
+      "title": "Approve Bread Rationing Cut",
+      "description": "Reduce public bread rations to save resources",
+      "source": "Ministry of Supply",
+      "urgency": 6,
+      "risk": 7,
+      "benefit": 4,
+      "linked_faction": "People",
+      "consequences": {
+        "if_signed": { "People_satisfaction": -15, "resources": 20, "paranoia": 5 },
+        "if_refused": { "resources": -10, "Party_loyalty": -5 }
+      }
+    },
+    {
+      "id": "dos_004",
+      "title": "Fund Secret Scientific Project",
+      "description": "Allocate resources for classified weapons research",
+      "source": "Scientists",
+      "urgency": 5,
+      "risk": 4,
+      "benefit": 8,
+      "linked_faction": "Scientists",
+      "consequences": {
+        "if_signed": { "Scientists_influence": 10, "resources": -15, "stability": 5 },
+        "if_refused": { "Scientists_loyalty": -12 }
+      }
+    },
+    {
+      "id": "dos_005",
+      "title": "Purge Party Officials - Traitors List",
+      "description": "Eliminate 50 suspected traitors within the Party",
+      "source": "Secret Police",
+      "urgency": 9,
+      "risk": 10,
+      "benefit": 7,
+      "linked_faction": "Party",
+      "consequences": {
+        "if_signed": { "Party_influence": -15, "paranoia": 20, "stability": -8 },
+        "if_refused": { "SecretPolice_loyalty": -15 }
+      }
+    }
+  ]
+}
