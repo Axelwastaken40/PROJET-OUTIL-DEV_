@@ -267,7 +267,56 @@ class GameUI {
         }
         
         this.gameState.loadData(dossiersData, eventsData);
+        this.drawDesk();
         this.updateDisplay();
+    }
+    
+    drawDesk() {
+        const canvas = document.getElementById("desk-canvas");
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext("2d");
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        // Draw wooden desk surface with details
+        ctx.fillStyle = "#8b7d70";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Wood grain effect
+        for (let i = 0; i < 30; i++) {
+            ctx.strokeStyle = `rgba(0, 0, 0, ${Math.random() * 0.1})`;
+            ctx.lineWidth = Math.random() * 3;
+            ctx.beginPath();
+            ctx.moveTo(0, Math.random() * canvas.height);
+            ctx.lineTo(canvas.width, Math.random() * canvas.height);
+            ctx.stroke();
+        }
+        
+        // Window on the left with shadow
+        ctx.fillStyle = "rgba(100, 180, 220, 0.3)";
+        ctx.fillRect(20, 20, 150, 150);
+        ctx.strokeStyle = "#666";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(20, 20, 150, 150);
+        
+        // Bookshelf in background
+        ctx.fillStyle = "#6b5b4e";
+        ctx.fillRect(canvas.width - 200, 50, 180, 200);
+        for (let i = 0; i < 4; i++) {
+            ctx.strokeStyle = "#999";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 200, 80 + i * 40);
+            ctx.lineTo(canvas.width - 20, 80 + i * 40);
+            ctx.stroke();
+        }
+        
+        // Draw desk shadow
+        ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+        ctx.beginPath();
+        ctx.ellipse(canvas.width / 2, canvas.height * 0.7, 300, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
     }
     
     setupEventListeners() {
@@ -282,6 +331,116 @@ class GameUI {
         document.getElementById("dossier-modal").addEventListener("click", (e) => {
             if (e.target.id === "dossier-modal") this.closeDossierModal();
         });
+        
+        // Desk object interactions
+        document.getElementById("dossiers-stack").addEventListener("click", () => this.showDossierQueue());
+        document.getElementById("telephone").addEventListener("click", () => this.handleTelephone());
+        document.getElementById("radio").addEventListener("click", () => this.handleRadio());
+        document.getElementById("typewriter").addEventListener("click", () => this.handleTypewriter());
+        document.getElementById("safe").addEventListener("click", () => this.handleSafe());
+        
+        // Tooltips
+        const objects = document.querySelectorAll(".desk-object");
+        objects.forEach(obj => {
+            obj.addEventListener("mouseenter", (e) => this.showTooltip(e));
+            obj.addEventListener("mouseleave", () => this.hideTooltip());
+        });
+    }
+    
+    showTooltip(event) {
+        const tooltip = document.getElementById("tooltip");
+        const title = event.target.closest(".desk-object").getAttribute("title");
+        tooltip.textContent = title;
+        tooltip.style.display = "block";
+        tooltip.style.left = event.pageX + 10 + "px";
+        tooltip.style.top = event.pageY + 10 + "px";
+    }
+    
+    hideTooltip() {
+        document.getElementById("tooltip").style.display = "none";
+    }
+    
+    showDossierQueue() {
+        if (this.gameState.currentDossierQueue.length === 0) {
+            alert("No dossiers available. Click 'NEXT DAY' to continue.");
+            return;
+        }
+        
+        const titles = this.gameState.currentDossierQueue.map(d => `• ${d.title}`).join("\n");
+        const dossierMsg = `INCOMING DOSSIERS:\n\n${titles}`;
+        alert(dossierMsg);
+    }
+    
+    handleTelephone() {
+        const choices = [
+            "Answer the call",
+            "Ignore it",
+            "Order interception"
+        ];
+        const choice = this.showChoiceDialog("TELEPHONE CALL", "An urgent call is coming in...", choices);
+        if (choice >= 0) {
+            this.gameState.addLog(`Telephone: Action ${choice + 1} taken`);
+            if (choice === 0) this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 5);
+            else if (choice === 2) this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 15);
+            this.updateDisplay();
+        }
+    }
+    
+    handleRadio() {
+        const choices = [
+            "Broadcast propaganda (paranoia +10)",
+            "Report on stability",
+            "Leave it off"
+        ];
+        const choice = this.showChoiceDialog("RADIO", "State radio awaits your message...", choices);
+        if (choice >= 0) {
+            this.gameState.addLog(`Radio broadcast: Option ${choice + 1} selected`);
+            if (choice === 0) {
+                this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 10);
+                this.gameState.factions["People"].satisfaction = Math.max(0, this.gameState.factions["People"].satisfaction - 8);
+            }
+            this.updateDisplay();
+        }
+    }
+    
+    handleTypewriter() {
+        const choices = [
+            "Type urgent decree (paranoia +3)",
+            "Write official letter",
+            "Cancel"
+        ];
+        const choice = this.showChoiceDialog("TYPEWRITER", "The machine is ready for your orders...", choices);
+        if (choice >= 0 && choice < 2) {
+            this.gameState.addLog(`Decree typed: Option ${choice + 1}`);
+            if (choice === 0) this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 3);
+            this.updateDisplay();
+        }
+    }
+    
+    handleSafe() {
+        const choice = confirm("Attempt to open the safe? (Paranoia +5)");
+        if (choice) {
+            this.gameState.addLog("Safe opened - secret resources found!");
+            this.gameState.gauges.resources = Math.min(100, this.gameState.gauges.resources + 15);
+            this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 5);
+            this.updateDisplay();
+        }
+    }
+    
+    showChoiceDialog(title, message, choices) {
+        let result = -1;
+        let choiceStr = `${title}\n\n${message}\n\n`;
+        choices.forEach((choice, idx) => {
+            choiceStr += `${idx + 1}. ${choice}\n`;
+        });
+        choiceStr += `\nEnter choice (1-${choices.length}):`;
+        
+        const input = prompt(choiceStr);
+        if (input) {
+            const num = parseInt(input) - 1;
+            if (num >= 0 && num < choices.length) result = num;
+        }
+        return result;
     }
     
     updateDisplay() {

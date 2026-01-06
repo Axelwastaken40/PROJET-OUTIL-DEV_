@@ -8,7 +8,40 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- Top Bar -->
+        <!-- 3D Desk Background -->
+        <div id="desk-view">
+            <canvas id="desk-canvas"></canvas>
+            
+            <!-- Interactive Objects on Desk -->
+            <div id="desk-objects">
+                <!-- Telephone -->
+                <div class="desk-object telephone" id="telephone" title="Telephone">
+                    <div class="object-indicator">📞</div>
+                </div>
+                
+                <!-- Dossiers Stack -->
+                <div class="desk-object dossiers-stack" id="dossiers-stack" title="Dossiers">
+                    <div class="object-indicator">📋</div>
+                </div>
+                
+                <!-- Radio -->
+                <div class="desk-object radio" id="radio" title="Radio">
+                    <div class="object-indicator">📻</div>
+                </div>
+                
+                <!-- Typewriter -->
+                <div class="desk-object typewriter" id="typewriter" title="Typewriter">
+                    <div class="object-indicator">⌨️</div>
+                </div>
+                
+                <!-- Safe/Vault -->
+                <div class="desk-object safe" id="safe" title="Safe">
+                    <div class="object-indicator">🔒</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Status Bar -->
         <div id="top-bar">
             <div class="gauge-display">
                 <div class="gauge">
@@ -39,25 +72,15 @@
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div id="main-content">
-            <!-- Left Panel: Dossiers -->
-            <div id="left-panel" class="panel">
-                <h2>INCOMING DOSSIERS</h2>
-                <div id="dossier-queue"></div>
-                <button id="next-day-btn" class="btn-large" style="display:none;">NEXT DAY</button>
-            </div>
-
-            <!-- Right Panel: Factions -->
-            <div id="right-panel" class="panel">
-                <h2>FACTION STATUS</h2>
-                <div id="faction-list"></div>
-            </div>
+        <!-- Left Sidebar: Factions -->
+        <div id="left-sidebar" class="sidebar">
+            <h3>FACTIONS</h3>
+            <div id="faction-list"></div>
         </div>
 
-        <!-- Bottom Panel: Log -->
-        <div id="bottom-panel" class="panel">
-            <h2>JOURNAL & EVENTS</h2>
+        <!-- Right Sidebar: Log -->
+        <div id="right-sidebar" class="sidebar">
+            <h3>JOURNAL</h3>
             <div id="log-container"></div>
         </div>
 
@@ -84,8 +107,12 @@
                 <button id="restart-btn" class="btn-large">RESTART</button>
             </div>
         </div>
+
+        <!-- Tooltip -->
+        <div id="tooltip" class="tooltip" style="display:none;"></div>
     </div>
 
     <script src="game.js"></script>
 </body>
 </html>
+
