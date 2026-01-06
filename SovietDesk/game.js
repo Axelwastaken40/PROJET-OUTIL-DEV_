@@ -326,18 +326,43 @@ class GameUI {
         document.getElementById("next-day-btn").addEventListener("click", () => this.nextDay());
         document.getElementById("restart-btn").addEventListener("click", () => this.restart());
         document.querySelector(".close").addEventListener("click", () => this.closeDossierModal());
+        document.getElementById("action-close").addEventListener("click", () => this.closeActionModal());
+        document.getElementById("action-ok-btn").addEventListener("click", () => this.closeActionModal());
         
         // Close modal when clicking outside
         document.getElementById("dossier-modal").addEventListener("click", (e) => {
             if (e.target.id === "dossier-modal") this.closeDossierModal();
         });
         
-        // Desk object interactions
-        document.getElementById("dossiers-stack").addEventListener("click", () => this.showDossierQueue());
-        document.getElementById("telephone").addEventListener("click", () => this.handleTelephone());
-        document.getElementById("radio").addEventListener("click", () => this.handleRadio());
-        document.getElementById("typewriter").addEventListener("click", () => this.handleTypewriter());
-        document.getElementById("safe").addEventListener("click", () => this.handleSafe());
+        document.getElementById("action-modal").addEventListener("click", (e) => {
+            if (e.target.id === "action-modal") this.closeActionModal();
+        });
+        
+        // Desk object interactions - with proper event delegation
+        document.getElementById("dossiers-stack").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.showDossierQueue();
+        });
+        
+        document.getElementById("telephone").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.handleTelephone();
+        });
+        
+        document.getElementById("radio").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.handleRadio();
+        });
+        
+        document.getElementById("typewriter").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.handleTypewriter();
+        });
+        
+        document.getElementById("safe").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.handleSafe();
+        });
         
         // Tooltips
         const objects = document.querySelectorAll(".desk-object");
@@ -349,7 +374,7 @@ class GameUI {
     
     showTooltip(event) {
         const tooltip = document.getElementById("tooltip");
-        const title = event.target.closest(".desk-object").getAttribute("title");
+        const title = event.currentTarget.getAttribute("title");
         tooltip.textContent = title;
         tooltip.style.display = "block";
         tooltip.style.left = event.pageX + 10 + "px";
@@ -360,87 +385,56 @@ class GameUI {
         document.getElementById("tooltip").style.display = "none";
     }
     
+    showActionResult(title, message) {
+        document.getElementById("action-title").textContent = title;
+        document.getElementById("action-text").textContent = message;
+        document.getElementById("action-modal").style.display = "flex";
+    }
+    
+    closeActionModal() {
+        document.getElementById("action-modal").style.display = "none";
+    }
+    
     showDossierQueue() {
         if (this.gameState.currentDossierQueue.length === 0) {
-            alert("No dossiers available. Click 'NEXT DAY' to continue.");
+            this.showActionResult("INCOMING DOSSIERS", "No dossiers available. Click 'NEXT DAY' in the top bar to continue.");
             return;
         }
         
-        const titles = this.gameState.currentDossierQueue.map(d => `• ${d.title}`).join("\n");
-        const dossierMsg = `INCOMING DOSSIERS:\n\n${titles}`;
-        alert(dossierMsg);
+        const titles = this.gameState.currentDossierQueue.map((d, i) => `${i + 1}. ${d.title} (Urgency: ${d.urgency}/10)`).join("\n");
+        const dossierMsg = `${titles}\n\nClick on any dossier to view details.`;
+        this.showActionResult("INCOMING DOSSIERS", dossierMsg);
     }
     
     handleTelephone() {
-        const choices = [
-            "Answer the call",
-            "Ignore it",
-            "Order interception"
-        ];
-        const choice = this.showChoiceDialog("TELEPHONE CALL", "An urgent call is coming in...", choices);
-        if (choice >= 0) {
-            this.gameState.addLog(`Telephone: Action ${choice + 1} taken`);
-            if (choice === 0) this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 5);
-            else if (choice === 2) this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 15);
-            this.updateDisplay();
-        }
+        this.gameState.addLog("📞 Telephone call answered");
+        this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 5);
+        this.showActionResult("TELEPHONE CALL", `A military general reports: Army morale is stable.\n\nParanoia +5`);
+        this.updateDisplay();
     }
     
     handleRadio() {
-        const choices = [
-            "Broadcast propaganda (paranoia +10)",
-            "Report on stability",
-            "Leave it off"
-        ];
-        const choice = this.showChoiceDialog("RADIO", "State radio awaits your message...", choices);
-        if (choice >= 0) {
-            this.gameState.addLog(`Radio broadcast: Option ${choice + 1} selected`);
-            if (choice === 0) {
-                this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 10);
-                this.gameState.factions["People"].satisfaction = Math.max(0, this.gameState.factions["People"].satisfaction - 8);
-            }
-            this.updateDisplay();
-        }
+        this.gameState.addLog("📻 Radio broadcast initiated");
+        this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 10);
+        this.gameState.factions["People"].satisfaction = Math.max(0, this.gameState.factions["People"].satisfaction - 8);
+        this.showActionResult("STATE RADIO BROADCAST", `"Citizens! Our great nation progresses..."\n\nParanoia +10\nPeople satisfaction -8`);
+        this.updateDisplay();
     }
     
     handleTypewriter() {
-        const choices = [
-            "Type urgent decree (paranoia +3)",
-            "Write official letter",
-            "Cancel"
-        ];
-        const choice = this.showChoiceDialog("TYPEWRITER", "The machine is ready for your orders...", choices);
-        if (choice >= 0 && choice < 2) {
-            this.gameState.addLog(`Decree typed: Option ${choice + 1}`);
-            if (choice === 0) this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 3);
-            this.updateDisplay();
-        }
+        this.gameState.addLog("⌨️ Urgent decree typed");
+        this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 3);
+        this.gameState.gauges.stability = Math.max(0, this.gameState.gauges.stability - 2);
+        this.showActionResult("TYPED DECREE", `"By order of the Secretary...\nAll dissidents must be identified..."\n\nParanoia +3\nStability -2`);
+        this.updateDisplay();
     }
     
     handleSafe() {
-        const choice = confirm("Attempt to open the safe? (Paranoia +5)");
-        if (choice) {
-            this.gameState.addLog("Safe opened - secret resources found!");
-            this.gameState.gauges.resources = Math.min(100, this.gameState.gauges.resources + 15);
-            this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 5);
-            this.updateDisplay();
-        }
-    }
-    
-    showChoiceDialog(title, message, choices) {
-        let result = -1;
-        let choiceStr = `${title}\n\n${message}\n\n`;
-        choices.forEach((choice, idx) => {
-            choiceStr += `${idx + 1}. ${choice}\n`;
-        });
-        choiceStr += `\nEnter choice (1-${choices.length}):`;
-        
-        const input = prompt(choiceStr);
-        if (input) {
-            const num = parseInt(input) - 1;
-            if (num >= 0 && num < choices.length) result = num;
-        }
-        return result;
+        this.gameState.addLog("🔒 Safe opened - secret resources acquired");
+        this.gameState.gauges.resources = Math.min(100, this.gameState.gauges.resources + 20);
+        this.gameState.gauges.paranoia = Math.min(100, this.gameState.gauges.paranoia + 5);
+        this.showActionResult("SECRET SAFE OPENED", `You discovered classified files and emergency funds.\n\nResources +20\nParanoia +5`);
+        this.updateDisplay();
     }
     
     updateDisplay() {
