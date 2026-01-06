@@ -295,6 +295,26 @@ class GameUI {
         this.setupEventListeners();
     }
     
+    async loadAssets() {
+        // Try to load user-provided assets from /assets folder
+        this.assets = {};
+        const list = [
+            { k: 'map', s: './assets/map.jpg' },
+            { k: 'lenin', s: './assets/lenin.jpg' },
+            { k: 'stalin', s: './assets/stalin.jpg' }
+        ];
+
+        const loaders = list.map(item => new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => { this.assets[item.k] = img; resolve({k:item.k,ok:true}); };
+            img.onerror = () => { this.assets[item.k] = null; resolve({k:item.k,ok:false}); };
+            img.src = item.s;
+        }));
+
+        const results = await Promise.all(loaders);
+        if (window.__SOVIET_DESK_DEBUG) console.log('Assets loaded', results);
+    }
+    
     async init() {
         // Try to load from JSON, fallback to embedded data
         let dossiersData = EMBEDDED_DOSSIERS;
@@ -321,6 +341,12 @@ class GameUI {
         }
         
         this.gameState.loadData(dossiersData, eventsData);
+        // Load optional assets (map, portraits) provided by user
+        try {
+            await this.loadAssets();
+        } catch (e) {
+            console.warn('Asset load failed', e);
+        }
         // Enable debug when needed
         if (typeof window.__SOVIET_DESK_DEBUG === 'undefined') window.__SOVIET_DESK_DEBUG = false;
         console.log('GameUI init: loading data, debug=', window.__SOVIET_DESK_DEBUG);
@@ -359,25 +385,61 @@ class GameUI {
             ctx.stroke();
         }
         
-        // Window on the left with shadow
-        ctx.fillStyle = "rgba(100, 180, 220, 0.3)";
-        // Window (scaled using display dimensions)
-        ctx.fillRect(20, 20, Math.min(150, displayWidth * 0.25), Math.min(150, displayHeight * 0.25));
-        ctx.strokeStyle = "#666";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(20, 20, Math.min(150, displayWidth * 0.25), Math.min(150, displayHeight * 0.25));
-        
-        // Bookshelf in background
-        ctx.fillStyle = "#6b5b4e";
-        // Bookshelf in background (position relative to display size)
-        ctx.fillRect(displayWidth - Math.min(200, displayWidth * 0.3), 50, Math.min(180, displayWidth * 0.25), Math.min(200, displayHeight * 0.4));
-        for (let i = 0; i < 4; i++) {
-            ctx.strokeStyle = "#999";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(displayWidth - Math.min(200, displayWidth * 0.3), 80 + i * 40);
-            ctx.lineTo(displayWidth - 20, 80 + i * 40);
-            ctx.stroke();
+        // Wall decoration: try to draw user-provided assets (map, portraits)
+        ctx.fillStyle = '#24462f'; // deep green wall background
+        ctx.fillRect(0, 0, displayWidth, displayHeight * 0.6);
+
+        // Map area (left)
+        const mapW = Math.min(480, displayWidth * 0.45);
+        const mapH = Math.min(300, displayHeight * 0.35);
+        const mapX = 40;
+        const mapY = 30;
+        if (this.assets && this.assets.map) {
+            try { ctx.drawImage(this.assets.map, mapX, mapY, mapW, mapH); } catch(e) { ctx.fillStyle = '#e6d9c7'; ctx.fillRect(mapX, mapY, mapW, mapH); }
+        } else {
+            ctx.fillStyle = '#e6d9c7'; ctx.fillRect(mapX, mapY, mapW, mapH);
+            ctx.strokeStyle = '#aa7f3c'; ctx.lineWidth = 2; ctx.strokeRect(mapX, mapY, mapW, mapH);
+            ctx.fillStyle = '#9b6a3a'; ctx.font = '18px Courier New'; ctx.fillText('MAP OF USSR', mapX + 12, mapY + 28);
+        }
+
+        // Portraits (right)
+        const frameW = 120, frameH = 160;
+        const f1x = displayWidth - frameW - 60;
+        const f1y = 30;
+        const f2x = f1x - frameW - 20;
+        const f2y = f1y + 10;
+        if (this.assets && this.assets.lenin) {
+            ctx.drawImage(this.assets.lenin, f2x, f2y, frameW, frameH);
+        } else {
+            ctx.fillStyle = '#2b2b2b'; ctx.fillRect(f2x, f2y, frameW, frameH);
+            ctx.strokeStyle = '#b88b3a'; ctx.lineWidth = 4; ctx.strokeRect(f2x, f2y, frameW, frameH);
+            ctx.fillStyle = '#f0e7d6'; ctx.beginPath(); ctx.arc(f2x + frameW/2, f2y + 60, 28, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#222'; ctx.font = 'bold 12px Courier New'; ctx.fillText('LENIN', f2x + 18, f2y + frameH - 10);
+        }
+        if (this.assets && this.assets.stalin) {
+            ctx.drawImage(this.assets.stalin, f1x, f1y, frameW, frameH);
+        } else {
+            ctx.fillStyle = '#2b2b2b'; ctx.fillRect(f1x, f1y, frameW, frameH);
+            ctx.strokeStyle = '#b88b3a'; ctx.lineWidth = 4; ctx.strokeRect(f1x, f1y, frameW, frameH);
+            ctx.fillStyle = '#f0e7d6'; ctx.beginPath(); ctx.arc(f1x + frameW/2, f1y + 60, 28, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#222'; ctx.font = 'bold 12px Courier New'; ctx.fillText('STALIN', f1x + 18, f1y + frameH - 10);
+        }
+
+        // Small flags near portraits
+        function drawFlagLocal(ctx, x, y, h) {
+            ctx.fillStyle = '#b40000'; ctx.fillRect(x, y, h*0.5, h*0.6);
+            ctx.fillStyle = '#ffd93d'; ctx.beginPath(); ctx.arc(x + h*0.18, y + h*0.18, h*0.04, 0, Math.PI*2); ctx.fill();
+        }
+        drawFlagLocal(ctx, f2x - 28, f2y + 18, 80);
+        drawFlagLocal(ctx, f1x + frameW + 6, f1y + 18, 80);
+
+        // Bookshelf under map
+        const shelfX = mapX + mapW + 10;
+        const shelfY = mapY + 10;
+        ctx.fillStyle = '#4a3629'; ctx.fillRect(shelfX, shelfY, 140, mapH - 20);
+        for (let s = 0; s < 5; s++) {
+            ctx.fillStyle = `rgba(200,180,140,${0.7 - s*0.12})`;
+            ctx.fillRect(shelfX + 8, shelfY + 12 + s*34, 124, 22);
         }
 
         // Debug hint
