@@ -267,50 +267,67 @@ class GameUI {
         }
         
         this.gameState.loadData(dossiersData, eventsData);
+        // Enable debug when needed
+        if (typeof window.__SOVIET_DESK_DEBUG === 'undefined') window.__SOVIET_DESK_DEBUG = false;
+        console.log('GameUI init: loading data, debug=', window.__SOVIET_DESK_DEBUG);
         this.drawDesk();
+        // Re-draw on resize to keep canvas crisp
+        window.addEventListener('resize', () => this.drawDesk());
         this.updateDisplay();
     }
     
     drawDesk() {
         const canvas = document.getElementById("desk-canvas");
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext("2d");
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        // Handle high-DPI displays to prevent blurriness
+        const dpr = window.devicePixelRatio || 1;
+        const displayWidth = canvas.offsetWidth;
+        const displayHeight = canvas.offsetHeight;
+        canvas.width = Math.floor(displayWidth * dpr);
+        canvas.height = Math.floor(displayHeight * dpr);
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         
         // Draw wooden desk surface with details
         ctx.fillStyle = "#8b7d70";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
         
         // Wood grain effect
         for (let i = 0; i < 30; i++) {
-            ctx.strokeStyle = `rgba(0, 0, 0, ${Math.random() * 0.1})`;
-            ctx.lineWidth = Math.random() * 3;
+            ctx.strokeStyle = `rgba(0, 0, 0, ${Math.random() * 0.08})`;
+            ctx.lineWidth = (Math.random() * 2) + 0.5;
             ctx.beginPath();
-            ctx.moveTo(0, Math.random() * canvas.height);
-            ctx.lineTo(canvas.width, Math.random() * canvas.height);
+            ctx.moveTo(0, Math.random() * displayHeight);
+            ctx.lineTo(displayWidth, Math.random() * displayHeight);
             ctx.stroke();
         }
         
         // Window on the left with shadow
         ctx.fillStyle = "rgba(100, 180, 220, 0.3)";
-        ctx.fillRect(20, 20, 150, 150);
+        // Window (scaled using display dimensions)
+        ctx.fillRect(20, 20, Math.min(150, displayWidth * 0.25), Math.min(150, displayHeight * 0.25));
         ctx.strokeStyle = "#666";
         ctx.lineWidth = 3;
-        ctx.strokeRect(20, 20, 150, 150);
+        ctx.strokeRect(20, 20, Math.min(150, displayWidth * 0.25), Math.min(150, displayHeight * 0.25));
         
         // Bookshelf in background
         ctx.fillStyle = "#6b5b4e";
-        ctx.fillRect(canvas.width - 200, 50, 180, 200);
+        // Bookshelf in background (position relative to display size)
+        ctx.fillRect(displayWidth - Math.min(200, displayWidth * 0.3), 50, Math.min(180, displayWidth * 0.25), Math.min(200, displayHeight * 0.4));
         for (let i = 0; i < 4; i++) {
             ctx.strokeStyle = "#999";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(canvas.width - 200, 80 + i * 40);
-            ctx.lineTo(canvas.width - 20, 80 + i * 40);
+            ctx.moveTo(displayWidth - Math.min(200, displayWidth * 0.3), 80 + i * 40);
+            ctx.lineTo(displayWidth - 20, 80 + i * 40);
             ctx.stroke();
         }
+
+        // Debug hint
+        if (window.__SOVIET_DESK_DEBUG) console.log('drawDesk', {displayWidth, displayHeight, dpr});
         
         // Draw desk shadow
         ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
@@ -320,49 +337,33 @@ class GameUI {
     }
     
     setupEventListeners() {
-        document.getElementById("sign-btn").addEventListener("click", () => this.handleDossier("signed"));
-        document.getElementById("refuse-btn").addEventListener("click", () => this.handleDossier("refused"));
-        document.getElementById("delay-btn").addEventListener("click", () => this.handleDossier("delayed"));
-        document.getElementById("next-day-btn").addEventListener("click", () => this.nextDay());
-        document.getElementById("restart-btn").addEventListener("click", () => this.restart());
-        document.querySelector(".close").addEventListener("click", () => this.closeDossierModal());
-        document.getElementById("action-close").addEventListener("click", () => this.closeActionModal());
-        document.getElementById("action-ok-btn").addEventListener("click", () => this.closeActionModal());
+        if (window.__SOVIET_DESK_DEBUG) console.log('setupEventListeners attaching events');
+        const signBtn = document.getElementById("sign-btn"); if (signBtn) signBtn.addEventListener("click", () => this.handleDossier("signed")); else console.warn('sign-btn missing');
+        const refuseBtn = document.getElementById("refuse-btn"); if (refuseBtn) refuseBtn.addEventListener("click", () => this.handleDossier("refused")); else console.warn('refuse-btn missing');
+        const delayBtn = document.getElementById("delay-btn"); if (delayBtn) delayBtn.addEventListener("click", () => this.handleDossier("delayed")); else console.warn('delay-btn missing');
+        const nextDayBtn = document.getElementById("next-day-btn"); if (nextDayBtn) nextDayBtn.addEventListener("click", () => this.nextDay()); else console.warn('next-day-btn missing');
+        const restartBtn = document.getElementById("restart-btn"); if (restartBtn) restartBtn.addEventListener("click", () => this.restart()); else console.warn('restart-btn missing');
+        const closeX = document.querySelector(".close"); if (closeX) closeX.addEventListener("click", () => this.closeDossierModal()); else console.warn('.close missing');
+        const actionClose = document.getElementById("action-close"); if (actionClose) actionClose.addEventListener("click", () => this.closeActionModal()); else console.warn('action-close missing');
+        const actionOk = document.getElementById("action-ok-btn"); if (actionOk) actionOk.addEventListener("click", () => this.closeActionModal()); else console.warn('action-ok-btn missing');
         
         // Close modal when clicking outside
-        document.getElementById("dossier-modal").addEventListener("click", (e) => {
+        const dossierModal = document.getElementById("dossier-modal");
+        if (dossierModal) dossierModal.addEventListener("click", (e) => {
             if (e.target.id === "dossier-modal") this.closeDossierModal();
-        });
+        }); else console.warn('dossier-modal missing');
         
-        document.getElementById("action-modal").addEventListener("click", (e) => {
+        const actionModal = document.getElementById("action-modal");
+        if (actionModal) actionModal.addEventListener("click", (e) => {
             if (e.target.id === "action-modal") this.closeActionModal();
-        });
+        }); else console.warn('action-modal missing');
         
         // Desk object interactions - with proper event delegation
-        document.getElementById("dossiers-stack").addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.showDossierQueue();
-        });
-        
-        document.getElementById("telephone").addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.handleTelephone();
-        });
-        
-        document.getElementById("radio").addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.handleRadio();
-        });
-        
-        document.getElementById("typewriter").addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.handleTypewriter();
-        });
-        
-        document.getElementById("safe").addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.handleSafe();
-        });
+        const ds = document.getElementById("dossiers-stack"); if (ds) ds.addEventListener("click", (e) => { e.stopPropagation(); this.showDossierQueue(); }); else console.warn('dossiers-stack missing');
+        const tel = document.getElementById("telephone"); if (tel) tel.addEventListener("click", (e) => { e.stopPropagation(); this.handleTelephone(); }); else console.warn('telephone missing');
+        const rad = document.getElementById("radio"); if (rad) rad.addEventListener("click", (e) => { e.stopPropagation(); this.handleRadio(); }); else console.warn('radio missing');
+        const type = document.getElementById("typewriter"); if (type) type.addEventListener("click", (e) => { e.stopPropagation(); this.handleTypewriter(); }); else console.warn('typewriter missing');
+        const sf = document.getElementById("safe"); if (sf) sf.addEventListener("click", (e) => { e.stopPropagation(); this.handleSafe(); }); else console.warn('safe missing');
         
         // Tooltips
         const objects = document.querySelectorAll(".desk-object");

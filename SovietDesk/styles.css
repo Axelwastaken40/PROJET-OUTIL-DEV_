@@ -341,6 +341,28 @@ body {
     padding: 12px;
 }
 
+.btn-next-day {
+    padding: 10px 15px;
+    background-color: #cc0000;
+    color: #ffff00;
+    border: 2px solid #ffff00;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    font-size: 0.9em;
+    margin-left: auto;
+    align-self: center;
+}
+
+.btn-next-day:hover {
+    background-color: #ff0000;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+}
+
 /* Modal */
 .modal {
     position: fixed;
